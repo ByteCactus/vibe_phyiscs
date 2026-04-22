@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import useStore from '../store/useStore';
+import translations from '../locales/translations';
 
 export default function Grade8() {
-  const { activeExperiment, grade8Params, resetTrigger } = useStore();
+  const { activeExperiment, grade8Params, resetTrigger, language } = useStore();
+  const t = translations[language];
   const canvasRef = useRef(null);
   
   const [dragging, setDragging] = useState(null);
@@ -62,7 +64,8 @@ export default function Grade8() {
         ctx.fillRect(bx, by, 50, 75);
         ctx.fillStyle = '#ef4444'; ctx.fillRect(bx, by - 12, 50, 12);
         ctx.shadowBlur = 0;
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 16px Inter'; ctx.fillText(`${grade8Params.circuitVoltage}В`, bx - 50, by + 40);
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 16px Inter'; 
+        ctx.fillText(`${grade8Params.circuitVoltage}${language === 'uk' ? 'В' : 'V'}`, bx - 50, by + 40);
 
         // Резистор (збільшений)
         const rx = cx + resPos.x, ry = cy + resPos.y;
@@ -71,7 +74,8 @@ export default function Grade8() {
         ctx.fillStyle = resGrad;
         ctx.fillRect(rx, ry, 100, 25);
         ctx.fillStyle = '#111'; ctx.fillRect(rx + 20, ry, 6, 25); ctx.fillRect(rx + 50, ry, 6, 25); ctx.fillRect(rx + 75, ry, 6, 25);
-        ctx.fillStyle = '#fff'; ctx.font = '15px Inter'; ctx.fillText(`${grade8Params.circuitResistance}Ом`, rx + 20, ry - 10);
+        ctx.fillStyle = '#fff'; ctx.font = '15px Inter'; 
+        ctx.fillText(`${grade8Params.circuitResistance}${language === 'uk' ? 'Ом' : 'Ω'}`, rx + 20, ry - 10);
 
         // Лампочка (збільшена)
         const lx = cx + 180, ly = cy;
@@ -133,7 +137,7 @@ export default function Grade8() {
         }
 
         ctx.fillStyle = '#3b82f6'; ctx.font = 'bold 20px Inter';
-        ctx.fillText(`I = ${current.toFixed(2)} А`, cx - 60, cy + 10);
+        ctx.fillText(`I = ${current.toFixed(2)} ${language === 'uk' ? 'А' : 'A'}`, cx - 60, cy + 10);
 
       } else if (activeExperiment === 2) {
         // Дослід 2: Агрегатні стани
@@ -141,13 +145,18 @@ export default function Grade8() {
         const cy = canvas.height / 2 + 50;
 
         const energy = grade8Params.thermalEnergy;
-        let temp = -20; let state = 'лід';
+        let temp = -20;
         
-        if (energy < 200) { temp = -20 + (energy / 200) * 20; state = 'лід'; }
-        else if (energy < 400) { temp = 0; state = 'плавлення'; }
-        else if (energy < 700) { temp = 0 + ((energy - 400) / 300) * 100; state = 'вода'; }
-        else if (energy < 900) { temp = 100; state = 'кипіння'; }
-        else { temp = 100 + ((energy - 900) / 100) * 50; state = 'пара'; }
+        if (energy < 200) { temp = -20 + (energy / 200) * 20; }
+        else if (energy < 400) { temp = 0; }
+        else if (energy < 700) { temp = 0 + ((energy - 400) / 300) * 100; }
+        else if (energy < 900) { temp = 100; }
+        else { temp = 100 + ((energy - 900) / 100) * 50; }
+
+        const isIce = energy < 400;
+        const isMelting = energy >= 200 && energy < 400;
+        const isBoiling = energy >= 700 && energy < 900;
+        const isVapor = energy >= 900;
 
         // Пальник (збільшений)
         if (energy > 0) {
@@ -198,7 +207,7 @@ export default function Grade8() {
         const fillH = fillBottom - fillTop;
 
         // Вода
-        if (state !== 'лід') {
+        if (energy >= 200) {
           const r = Math.min(200, Math.max(30, (temp / 100) * 200));
           const b = Math.max(50, 246 - (temp / 100) * 150);
           const waterGrad = ctx.createLinearGradient(0, fillTop, 0, fillBottom);
@@ -207,7 +216,7 @@ export default function Grade8() {
           ctx.fillStyle = waterGrad;
           ctx.fillRect(fillLeft, fillTop, fillW, fillH);
 
-          const waveAmp = state === 'кипіння' ? 6 : 2;
+          const waveAmp = isBoiling ? 6 : 2;
           ctx.beginPath(); ctx.moveTo(fillLeft, fillTop);
           for (let x = fillLeft; x <= fillRight; x += 5) {
             ctx.lineTo(x, fillTop + Math.sin(x * 0.15 + time * 0.1) * waveAmp);
@@ -217,12 +226,12 @@ export default function Grade8() {
         }
 
         // Кубики льоду
-        if (state === 'лід' || state === 'плавлення') {
+        if (isIce) {
           ctx.fillStyle = 'rgba(147, 197, 253, 0.9)';
           ctx.strokeStyle = 'rgba(255,255,255,0.4)';
           ctx.lineWidth = 2;
           const maxS = 30;
-          const iceS = state === 'лід' ? maxS : maxS * (1 - (energy - 200) / 200);
+          const iceS = !isMelting ? maxS : maxS * (1 - (energy - 200) / 200);
           
           if (iceS > 4) {
             const centerY = (fillTop + fillBottom) / 2;
@@ -243,8 +252,8 @@ export default function Grade8() {
         }
 
         // Бульбашки
-        if ((state === 'вода' && temp > 80) || state === 'кипіння') {
-          const numB = state === 'кипіння' ? 20 : 6;
+        if ((temp > 80 && energy < 700) || isBoiling) {
+          const numB = isBoiling ? 20 : 6;
           ctx.fillStyle = 'rgba(255,255,255,0.5)';
           for (let i = 0; i < numB; i++) {
             const bx = fillLeft + 8 + (i * 137 % (fillW - 16));
@@ -259,8 +268,8 @@ export default function Grade8() {
         ctx.restore();
 
         // Пара
-        if (state === 'пара' || state === 'кипіння' || (state === 'вода' && temp > 70)) {
-          const numS = state === 'пара' ? 35 : (state === 'кипіння' ? 18 : 6);
+        if (isVapor || isBoiling || (temp > 70)) {
+          const numS = isVapor ? 35 : (isBoiling ? 18 : 6);
           for (let i = 0; i < numS; i++) {
             const px = cx - 40 + (i * 97 % 80) + Math.sin(time * 0.04 + i) * 20;
             const py = cy - 50 - ((time * (1 + i % 2 * 0.5)) % 160);
@@ -402,7 +411,7 @@ export default function Grade8() {
 
         ctx.fillStyle = '#fff';
         ctx.font = '12px Inter';
-        ctx.fillText('Графік розподілу температури вздовж стрижня', gx, gy - 10);
+        ctx.fillText(language === 'uk' ? 'Графік розподілу температури вздовж стрижня' : 'Graf rozložení teploty podél tyče', gx + gW/2, gy - 10);
 
       } else if (activeExperiment === 4) {
         const magnets = [];
@@ -418,7 +427,6 @@ export default function Grade8() {
               angleDeg: baseAngle
             });
           } else {
-            // Інші магніти просто зміщені, якщо не перетягнуті (ми поки не підтримуємо незалежне перетягування для простоти, або можна просто розмістити їх симетрично)
             magnets.push({
               x: canvas.width / 2 + magnetPosRef.current.x + i * 150 - 75,
               y: canvas.height / 2 + magnetPosRef.current.y + (i%2===0? 80 : -80),
@@ -445,13 +453,12 @@ export default function Grade8() {
               const r2 = dx * dx + dy * dy;
               const r = Math.sqrt(r2);
               
-              if (r < 40) continue; // Уникаємо центру магніту
+              if (r < 40) continue; 
 
               const mDotR = dx * cosA + dy * sinA;
               const Bx = (3 * dx * mDotR) / r2 - cosA;
               const By = (3 * dy * mDotR) / r2 - sinA;
 
-              // Сумуємо поля (обернено пропорційно кубу відстані)
               const weight = 1000 / (r2 * r);
               sumBx += Bx * weight;
               sumBy += By * weight;
@@ -466,7 +473,6 @@ export default function Grade8() {
               sumBy /= bMag;
             }
 
-            // Колір залежить від відстані
             ctx.strokeStyle = `rgba(203, 213, 225, ${maxIntensity * 0.8 + 0.1})`;
             
             const len = 10;
@@ -475,7 +481,6 @@ export default function Grade8() {
             ctx.lineTo(x + sumBx * len/2, y + sumBy * len/2);
             ctx.stroke();
 
-            // Стрілочка
             const headAngle = Math.atan2(sumBy, sumBx);
             ctx.beginPath();
             ctx.moveTo(x + sumBx * len/2, y + sumBy * len/2);
@@ -500,6 +505,7 @@ export default function Grade8() {
           ctx.fillRect(0, -mHeight/2, mWidth/2, mHeight);
           ctx.fillStyle = '#fff';
           ctx.font = 'bold 16px Inter';
+          ctx.textAlign = 'center';
           ctx.fillText('N', mWidth/4, 5);
 
           // Південний (S) - синій
@@ -524,7 +530,7 @@ export default function Grade8() {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationId);
     };
-  }, [activeExperiment, grade8Params, resetTrigger, batPos, resPos, dragging]);
+  }, [activeExperiment, grade8Params, resetTrigger, batPos, resPos, dragging, language]);
 
   const handleMouseDown = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();

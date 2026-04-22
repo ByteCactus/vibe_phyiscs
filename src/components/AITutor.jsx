@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Volume2, VolumeX } from 'lucide-react';
 import useStore from '../store/useStore';
+import translations from '../locales/translations';
 
 export default function AITutor() {
-  const { aiTutorOpen, toggleAITutor, aiMessages, addAiMessage, activeGrade, activeExperiment } = useStore();
+  const { aiTutorOpen, toggleAITutor, aiMessages, addAiMessage, activeGrade, activeExperiment, language } = useStore();
   const [input, setInput] = useState('');
   const [isMuted, setIsMuted] = useState(false);
   const messagesEndRef = useRef(null);
+  const t = translations[language];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -22,7 +24,7 @@ export default function AITutor() {
     if (isMuted || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'uk-UA'; // Set language to Ukrainian
+    utterance.lang = language === 'uk' ? 'uk-UA' : 'cs-CZ';
     utterance.rate = 1.0;
     utterance.pitch = 1.1;
     window.speechSynthesis.speak(utterance);
@@ -37,23 +39,45 @@ export default function AITutor() {
     setInput('');
 
     setTimeout(() => {
-      let response = `Я бачу, ви зараз у розділі ${activeGrade}-го класу, Дослід ${activeExperiment}! Це чудове запитання про "${userMessage}". `;
-      
-      if (activeGrade === 7) {
-        if (activeExperiment === 1) response += "Тут ми вивчаємо закон Архімеда. Спробуйте змінити густину рідини, щоб побачити, як зміниться виштовхувальна сила!";
-        else response += "У механіці ми вивчаємо рух. Змініть швидкість, щоб побачити, як швидко тіло долає шлях.";
-      } else if (activeGrade === 8) {
-        if (activeExperiment === 1) response += "Закон Ома показує зв'язок між напругою та струмом. Спробуйте збільшити опір!";
-        else response += "Під час нагрівання лід спочатку плавиться, а потім вода нагрівається. Температура не росте під час зміни агрегатного стану.";
-      } else if (activeGrade === 9) {
-         if (activeExperiment === 1) response += "Оптика вивчає заломлення світла. Змініть показник заломлення, щоб змінити кут!";
-         else response += "Хвилі переносять енергію, а не речовину. Спробуйте змінити частоту хвиль.";
-      } else if (activeGrade === 10) {
-        if (activeExperiment === 1) response += "Класична механіка Ньютона: гравітація та пружність впливають на поведінку об'єктів. Потягніть їх мишкою!";
-        else response += "Молекулярно-кінетична теорія пояснює, що тиск газу залежить від температури та об'єму.";
-      } else if (activeGrade === 11) {
-        if (activeExperiment === 1) response += "Сила Лоренца діє на заряджені частинки у магнітному полі. Змініть магнітне поле (B).";
-        else response += "Радіоактивний розпад є ймовірнісним процесом для одного атома, але передбачуваним для багатьох.";
+      let response = '';
+      if (language === 'uk') {
+        response = `Я бачу, ви зараз у розділі ${activeGrade}-го класу, Дослід ${activeExperiment}! Це чудове запитання про "${userMessage}". `;
+        
+        if (activeGrade === 7) {
+          if (activeExperiment === 1) response += "Тут ми вивчаємо закон Архімеда. Спробуйте змінити густину рідини, щоб побачити, як зміниться виштовхувальна сила!";
+          else response += "У механіці ми вивчаємо рух. Змініть швидкість, щоб побачити, як швидко тіло долає шлях.";
+        } else if (activeGrade === 8) {
+          if (activeExperiment === 1) response += "Закон Ома показує зв'язок між напругою та струмом. Спробуйте збільшити опір!";
+          else response += "Під час нагрівання лід спочатку плавиться, а потім вода нагрівається. Температура не росте під час зміни агрегатного стану.";
+        } else if (activeGrade === 9) {
+           if (activeExperiment === 1) response += "Оптика вивчає заломлення світла. Змініть показник заломлення, щоб змінити кут!";
+           else response += "Хвилі переносять енергію, а не речовину. Спробуйте змінити частоту хвиль.";
+        } else if (activeGrade === 10) {
+          if (activeExperiment === 1) response += "Класична механіка Ньютона: гравітація та пружність впливають на поведінку об'єктів. Потягніть їх мишкою!";
+          else response += "Молекулярно-кінетична теорія пояснює, що тиск газу залежить від температури та об'єму.";
+        } else if (activeGrade === 11) {
+          if (activeExperiment === 1) response += "Сила Лоренца діє на заряджені частинки у магнітному полі. Змініть магнітне поле (B).";
+          else response += "Радіоактивний розпад є ймовірнісним процесом для одного атома, але передбачуваним для багатьох.";
+        }
+      } else {
+        response = `Vidím, že jste právě v sekci pro ${activeGrade}. třídu, pokus ${activeExperiment}! To je skvělá otázka ohledně "${userMessage}". `;
+        
+        if (activeGrade === 7) {
+          if (activeExperiment === 1) response += "Zde studujeme Archimedův zákon. Zkuste změnit hustotu kapaliny, abyste viděli, jak se změní vztlaková síla!";
+          else response += "V mechanice studujeme pohyb. Změňte rychlost, abyste viděli, jak rychle těleso urazí dráhu.";
+        } else if (activeGrade === 8) {
+          if (activeExperiment === 1) response += "Ohmův zákon ukazuje vztah mezi napětím a proudem. Zkuste zvýšit odpor!";
+          else response += "Během zahřívání led nejprve taje a poté se voda ohřívá. Teplota neroste během změny skupenství.";
+        } else if (activeGrade === 9) {
+           if (activeExperiment === 1) response += "Optika studuje lom světla. Změňte index lomu, abyste změnili úhel!";
+           else response += "Vlnění přenáší energii, nikoliv látku. Zkuste změnit frekvenci vlnění.";
+        } else if (activeGrade === 10) {
+          if (activeExperiment === 1) response += "Klasická Newtonova mechanika: gravitace a pružnost ovlivňují chování objektů. Přetáhněte je myší!";
+          else response += "Kinetická teorie látek vysvětluje, že tlak plynu závisí na teplotě a objemu.";
+        } else if (activeGrade === 11) {
+          if (activeExperiment === 1) response += "Lorentzova síla působí na nabité částice v magnetickém poli. Změňte magnetické pole (B).";
+          else response += "Radioaktivní rozpad je pravděpodobnostní proces pro jeden atom, ale předvídatelný pro mnoho atomů.";
+        }
       }
 
       addAiMessage({ role: 'ai', content: response });
@@ -110,7 +134,7 @@ export default function AITutor() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <MessageCircle size={20} color={'#3b82f6'} />
-          <h3 style={{ fontSize: '16px', margin: 0 }}>AI Вчитель</h3>
+          <h3 style={{ fontSize: '16px', margin: 0 }}>{language === 'uk' ? 'AI Вчитель' : 'AI Učitel'}</h3>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button onClick={() => setIsMuted(!isMuted)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
@@ -159,7 +183,7 @@ export default function AITutor() {
           type="text" 
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Запитайте щось..."
+          placeholder={t.ui.aiPlaceholder}
           style={{
             flex: 1,
             background: 'rgba(0,0,0,0.2)',

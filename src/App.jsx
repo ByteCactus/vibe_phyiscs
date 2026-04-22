@@ -3,56 +3,19 @@ import useStore from './store/useStore';
 import ControlPanel from './components/ControlPanel';
 import AITutor from './components/AITutor';
 import TheoryPanel from './components/TheoryPanel';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import Grade7 from './modules/Grade7';
 import Grade8 from './modules/Grade8';
 import Grade9 from './modules/Grade9';
 import Grade10 from './modules/Grade10';
 import Grade11 from './modules/Grade11';
 import { BookOpen, Droplets, Zap, Eye, Rocket, Atom } from 'lucide-react';
+import translations from './locales/translations';
 
 function App() {
-  const { activeGrade, setActiveGrade, activeExperiment, setActiveExperiment } = useStore();
+  const { activeGrade, setActiveGrade, activeExperiment, setActiveExperiment, language } = useStore();
 
-  const expNames = {
-    7: { 1: 'Закон Архімеда', 2: 'Рівномірний рух', 3: 'Важіль', 4: 'Закон Паскаля' },
-    8: { 1: 'Електричне коло', 2: 'Агрегатні стани', 3: 'Теплопровідність', 4: 'Магнітне поле' },
-    9: { 1: 'Оптика (Лінзи)', 2: 'Хвилі', 3: 'Відбивання', 4: 'Ефект Доплера' },
-    10: { 1: 'Динаміка', 2: 'Ідеальний газ', 3: 'Балістика', 4: 'P-V Діаграма' },
-    11: { 1: 'Сила Лоренца', 2: 'Радіоактивність', 3: 'Індукція Фарадея', 4: 'Фотоефект' },
-  };
-
-  const expHints = {
-    7: { 
-      1: '🖱 Перетягніть брусок у воду. Змінюйте густину тіла та рідини.', 
-      2: '🚗 Спостерігайте за графіком S(t). Змінюйте швидкість під час руху!',
-      3: '⚖️ Додавайте тягарці на ліве та праве плече важеля. Слідкуйте за балансом моментів сил.',
-      4: '💧 Чим глибше отвір, тим з більшою швидкістю вилітає струмінь (Закон Торрічеллі).'
-    },
-    8: { 
-      1: '⚡ Змінюйте напругу та опір. Перетягуйте елементи.', 
-      2: '🔥 Рухайте повзунок енергії — лід розтане, вода закипить!',
-      3: '🔥 Збільшуйте температуру зліва і спостерігайте за поширенням кінетичної енергії атомів.',
-      4: '🧲 Обертайте магніт і спостерігайте, як залізні ошурки шикуються вздовж ліній магнітного поля.'
-    },
-    9: { 
-      1: '🔬 Перетягуйте лінзу та лазер. Обертайте за край. Вибирайте тип лінзи.', 
-      2: '🌊 Перетягуйте генератор. Змінюйте частоту та амплітуду.',
-      3: '🪞 Перемикайте типи дзеркал (плоске, опукле, увігнуте). Знайдіть фокус увігнутого дзеркала.',
-      4: '🔊 Рухайте джерело звуку. Подолайте звуковий бар\'єр для утворення конуса Маха!'
-    },
-    10: { 
-      1: '🏀 Перетягуйте кульки. Змінюйте гравітацію та пружність.', 
-      2: '🌡 Змінюйте температуру та об\'єм — спостерігайте за тиском.',
-      3: '🎯 Налаштуйте кут та початкову швидкість гармати. Увімкніть опір повітря для реалістичної траєкторії.',
-      4: '📈 Змінюйте об\'єм газу під поршнем і спостерігайте за малюванням ізотерми на P-V діаграмі.'
-    },
-    11: { 
-      1: '🧲 Перетягуйте випромінювач. Змінюйте магнітне поле.', 
-      2: '☢ Змінюйте ймовірність розпаду ядер.',
-      3: '🧲 Рухайте магніт крізь котушку дроту. Спостерігайте за індукційним струмом на амперметрі.',
-      4: '💡 Змінюйте колір (енергію) світла. Червоне світло не вибиває електрони, а ультрафіолетове — легко!'
-    },
-  };
+  const t = translations[language];
 
   const renderModule = () => {
     switch (activeGrade) {
@@ -66,15 +29,16 @@ function App() {
   };
 
   const navItems = [
-    { grade: 7, label: '7 Клас', icon: <Droplets size={24} /> },
-    { grade: 8, label: '8 Клас', icon: <Zap size={24} /> },
-    { grade: 9, label: '9 Клас', icon: <Eye size={24} /> },
-    { grade: 10, label: '10 Клас', icon: <Rocket size={24} /> },
-    { grade: 11, label: '11 Клас', icon: <Atom size={24} /> },
+    { grade: 7, label: t.grades[7], icon: <Droplets size={24} /> },
+    { grade: 8, label: t.grades[8], icon: <Zap size={24} /> },
+    { grade: 9, label: t.grades[9], icon: <Eye size={24} /> },
+    { grade: 10, label: t.grades[10], icon: <Rocket size={24} /> },
+    { grade: 11, label: t.grades[11], icon: <Atom size={24} /> },
   ];
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex', overflow: 'hidden', backgroundColor: 'var(--bg-color)' }}>
+      <LanguageSwitcher />
       {/* Sidebar Navigation */}
       <nav className="glass-panel" style={{
         width: '90px',
@@ -150,7 +114,7 @@ function App() {
                 fontSize: '13px'
               }}
             >
-              {expNames[activeGrade]?.[num] || `Дослід ${num}`}
+              {t.expNames[activeGrade]?.[num] || `Дослід ${num}`}
             </button>
           ))}
         </div>
@@ -169,7 +133,7 @@ function App() {
           pointerEvents: 'none'
         }}>
           <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '11px', lineHeight: '1.4' }}>
-            {expHints[activeGrade]?.[activeExperiment] || ''}
+            {t.expHints[activeGrade]?.[activeExperiment] || ''}
           </p>
         </div>
 

@@ -210,6 +210,10 @@ const useStore = create((set) => ({
     grade11Params: { ...state.grade11Params, ...params } 
   })),
 
+  // Language State
+  language: 'uk', // 'uk' or 'cs'
+  setLanguage: (lang) => set({ language: lang }),
+
   // AI Tutor State
   aiTutorOpen: false,
   toggleAITutor: () => set((state) => ({ aiTutorOpen: !state.aiTutorOpen })),
@@ -219,11 +223,15 @@ const useStore = create((set) => ({
   addAiMessage: (message) => set((state) => ({ 
     aiMessages: [...state.aiMessages, message] 
   })),
-  clearAiMessages: () => set({ 
-    aiMessages: [
-      { role: 'ai', content: "Привіт! Я твій штучний інтелект-вчитель фізики. Запитуй мене про все, що бачиш на екрані!" }
-    ] 
-  }),
+  clearAiMessages: () => {
+    const { language } = useStore.getState();
+    const content = language === 'uk' 
+      ? "Привіт! Я твій штучний інтелект-вчитель фізики. Запитуй мене про все, що бачиш на екрані!"
+      : "Ahoj! Jsem tvůj AI učitel fyziky. Ptej se mě na cokoliv, co vidíš na obrazovce!";
+    set({ 
+      aiMessages: [{ role: 'ai', content }] 
+    });
+  },
 }));
 
 export default useStore;

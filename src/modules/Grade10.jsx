@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import Matter from 'matter-js';
 import useStore from '../store/useStore';
+import translations from '../locales/translations';
 
 export default function Grade10() {
-  const { activeExperiment, grade10Params, showVectors, resetTrigger } = useStore();
+  const { activeExperiment, grade10Params, showVectors, resetTrigger, language } = useStore();
+  const t = translations[language];
   const sceneRef = useRef(null);
   const engineRef = useRef(null);
   const renderRef = useRef(null);
@@ -51,7 +53,7 @@ export default function Grade10() {
       for (let i = 0; i < 6; i++) {
         const x = 100 + Math.random() * (width - 200);
         const y = 50 + Math.random() * (height / 3);
-        const radius = 30 + Math.random() * 30; // Збільшено розмір кульок
+        const radius = 30 + Math.random() * 30; 
         
         const body = Matter.Bodies.circle(x, y, radius, {
           restitution: grade10Params.restitution,
@@ -68,7 +70,6 @@ export default function Grade10() {
       }
 
       const mouse = Matter.Mouse.create(render.canvas);
-      // КРИТИЧНО: встановлюємо pixelRatio для миші, щоб вона працювала на High-DPI екранах
       mouse.pixelRatio = window.devicePixelRatio;
 
       const mouseConstraint = Matter.MouseConstraint.create(engine, { 
@@ -84,7 +85,6 @@ export default function Grade10() {
       mouse.element.removeEventListener("mousewheel", mouse.mousewheel);
       mouse.element.removeEventListener("DOMMouseScroll", mouse.mousewheel);
 
-      // Малюємо сітку фону
       Matter.Events.on(render, 'beforeRender', () => {
         const ctx = render.context;
         ctx.save();
@@ -95,7 +95,6 @@ export default function Grade10() {
         ctx.restore();
       });
 
-      // Світіння та вектори
       Matter.Events.on(render, 'afterRender', () => {
         const ctx = render.context;
         const allBodies = Matter.Composite.allBodies(engine.world);
@@ -114,7 +113,6 @@ export default function Grade10() {
                 ctx.moveTo(body.position.x, body.position.y); 
                 ctx.lineTo(body.position.x + vx * 5, body.position.y + vy * 5);
                 ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2; ctx.stroke();
-                // Підпис з уникненням накладання
                 ctx.fillStyle = '#22c55e'; ctx.font = '12px Inter';
                 ctx.fillText('v⃗', body.position.x + vx * 5 + 5, body.position.y + vy * 5 - 5);
               }
@@ -142,7 +140,6 @@ export default function Grade10() {
         if (render.canvas) render.canvas.remove();
       };
     } else if (activeExperiment === 2) {
-      // Дослід 2: Ідеальний газ
       const canvas = document.createElement('canvas');
       canvas.width = sceneRef.current.clientWidth;
       canvas.height = sceneRef.current.clientHeight;
@@ -170,11 +167,9 @@ export default function Grade10() {
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
         
-        // Збільшено об'єм газу для кращої видимості
         const boxSize = 100 + currentParams.gasVolume * 4;
         const halfBox = boxSize / 2;
         
-        // Фон циліндра
         ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
         ctx.fillRect(cx - halfBox, cy - halfBox, boxSize, boxSize);
         ctx.strokeStyle = 'rgba(255,255,255,0.4)';
@@ -186,7 +181,7 @@ export default function Grade10() {
         const r = Math.min(255, (currentParams.gasTemperature - 100) * 0.5);
         const b = Math.max(0, 255 - (currentParams.gasTemperature - 100) * 0.5);
         const color = `rgb(${r}, 50, ${b})`;
-        const pSize = currentParams.particleMass * 3; // Збільшені молекули
+        const pSize = currentParams.particleMass * 3; 
 
         gasParticlesRef.current.forEach(p => {
           const speed = Math.hypot(p.vx, p.vy) || 1;
@@ -209,11 +204,13 @@ export default function Grade10() {
         }
 
         ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Inter';
-        ctx.fillText(`Тиск P = ${pressure.toFixed(1)} у.о.`, cx - 80, cy - halfBox - 25);
+        ctx.fillText(`${language === 'uk' ? 'Тиск' : 'Tlak'} P = ${pressure.toFixed(1)} ${language === 'uk' ? 'у.о.' : 'j.'}`, cx - 80, cy - halfBox - 25);
         ctx.fillStyle = '#94a3b8'; ctx.font = '14px Inter';
-        ctx.fillText(`Температура: ${currentParams.gasTemperature}°C | Об'єм: ${currentParams.gasVolume}`, cx - 120, cy - halfBox - 5);
-        ctx.fillText('Закон Шарля / Гей-Люссака / Бойля-Маріотта (МКТ)', cx - 160, cy + halfBox + 30);
-        ctx.fillText('Броунівський рух: швидкість молекул залежить від температури', cx - 180, cy + halfBox + 50);
+        ctx.fillText(`${language === 'uk' ? 'Температура' : 'Teplota'}: ${currentParams.gasTemperature}°C | ${language === 'uk' ? 'Об\'єм' : 'Objem'}: ${currentParams.gasVolume}`, cx - 120, cy - halfBox - 5);
+        
+        ctx.font = '12px Inter';
+        ctx.fillText(language === 'uk' ? 'Закон Шарля / Гей-Люссака / Бойля-Маріотта (МКТ)' : 'Charlesův / Gay-Lussacův / Boyle-Mariottův zákon (Kinetická teorie)', cx - 160, cy + halfBox + 30);
+        ctx.fillText(language === 'uk' ? 'Броунівський рух: швидкість молекул залежить від температури' : 'Brownův pohyb: rychlost molekul závisí na teplotě', cx - 180, cy + halfBox + 50);
 
         time++;
         animationId = requestAnimationFrame(renderGas);
@@ -225,7 +222,6 @@ export default function Grade10() {
         if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
       };
     } else if (activeExperiment === 3) {
-      // Дослід 3: Балістика (Matter.js)
       const engine = Matter.Engine.create();
       engineRef.current = engine;
       engine.world.gravity.y = 1;
@@ -248,24 +244,21 @@ export default function Grade10() {
       
       const ground = Matter.Bodies.rectangle(width / 2, height - 20, width * 2, 40, { 
         isStatic: true, 
-        render: { fillStyle: '#166534' } // Темно зелена земля
+        render: { fillStyle: '#166534' } 
       });
 
-      // Ландшафт: пагорб посередині
       const hill = Matter.Bodies.polygon(width / 2, height - 40, 3, 80, { 
         isStatic: true, 
-        render: { fillStyle: '#14532d' }, // ще темніший
+        render: { fillStyle: '#14532d' }, 
         angle: Math.PI / 6
       });
 
-      // Цілі (мішені)
       const target1 = Matter.Bodies.rectangle(width - 150, height - 60, 40, 40, { isStatic: true, render: { fillStyle: '#eab308' } });
       const target2 = Matter.Bodies.rectangle(width - 250, height - 100, 30, 60, { isStatic: true, render: { fillStyle: '#a855f7' } });
       const target3 = Matter.Bodies.rectangle(width - 80, height - 180, 50, 20, { isStatic: true, render: { fillStyle: '#3b82f6' } });
 
       Matter.Composite.add(engine.world, [ground, hill, target1, target2, target3]);
 
-      // Гарамата
       const cannonX = 100;
       const cannonY = height - 40;
 
@@ -290,30 +283,26 @@ export default function Grade10() {
         ctx.save();
         ctx.translate(cannonX, cannonY);
         
-        // Малюємо основу гармати
         ctx.fillStyle = '#64748b';
         ctx.beginPath(); ctx.arc(0, 0, 25, Math.PI, 0); ctx.fill();
 
-        // Малюємо дуло
         ctx.rotate(angleRad);
         ctx.fillStyle = '#475569';
         ctx.fillRect(0, -10, 60, 20);
         ctx.restore();
 
-        // Додаємо інформативний текст
         ctx.fillStyle = '#fff';
         ctx.font = 'bold 14px Inter';
-        ctx.fillText('Спробуйте влучити в мішені, змінюючи кут, швидкість та опір!', 20, 30);
+        ctx.fillText(language === 'uk' ? 'Спробуйте влучити в мішені, змінюючи кут, швидкість та опір!' : 'Zkuste zasáhnout cíle změnou úhlu, rychlosti a odporu!', 20, 30);
         ctx.fillStyle = '#94a3b8';
         ctx.font = '12px Inter';
-        ctx.fillText(`Кут: ${currentParams.cannonAngle}°, Швидкість: ${currentParams.cannonSpeed} м/с, Опір: k=${currentParams.airResistance}`, 20, 50);
+        ctx.fillText(`${language === 'uk' ? 'Кут' : 'Úhel'}: ${currentParams.cannonAngle}°, ${language === 'uk' ? 'Швидкість' : 'Rychlost'}: ${currentParams.cannonSpeed} м/с, ${language === 'uk' ? 'Опір' : 'Odpor'}: k=${currentParams.airResistance}`, 20, 50);
       });
 
       Matter.Events.on(engine, 'beforeUpdate', () => {
         const currentParams = useStore.getState().grade10Params;
         cannonTimer++;
         
-        // Оновлюємо опір повітря для всіх кульок
         if (lastAirResistance !== currentParams.airResistance) {
           lastAirResistance = currentParams.airResistance;
           Matter.Composite.allBodies(engine.world).forEach(b => {
@@ -343,7 +332,6 @@ export default function Grade10() {
           Matter.Composite.add(engine.world, projectile);
         }
         
-        // Видалення снарядів, що вилетіли за екран
         Matter.Composite.allBodies(engine.world).forEach(b => {
           if (b.position.x > width + 100 || b.position.y > height + 100) {
             Matter.Composite.remove(engine.world, b);
@@ -364,7 +352,6 @@ export default function Grade10() {
       };
 
     } else if (activeExperiment === 4) {
-      // Дослід 4: P-V Діаграма (Ізотермічний процес)
       const canvas = document.createElement('canvas');
       canvas.width = sceneRef.current.clientWidth;
       canvas.height = sceneRef.current.clientHeight;
@@ -383,7 +370,6 @@ export default function Grade10() {
         const cx = canvas.width / 4;
         const cy = canvas.height / 2;
         
-        // Циліндр
         const cWidth = 200;
         const cHeight = 300;
         ctx.strokeStyle = '#fff';
@@ -395,8 +381,7 @@ export default function Grade10() {
         ctx.lineTo(cx + cWidth/2, cy - cHeight/2);
         ctx.stroke();
 
-        // Поршень
-        const volRatio = currentParams.gasPistonVolume / 200; // max vol = 200
+        const volRatio = currentParams.gasPistonVolume / 200; 
         const pistonY = cy + cHeight/2 - cHeight * volRatio;
         
         ctx.fillStyle = '#64748b';
@@ -404,43 +389,35 @@ export default function Grade10() {
         ctx.fillStyle = '#94a3b8';
         ctx.fillRect(cx - 10, pistonY - 100, 20, 80);
 
-        // Газ під поршнем
         ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
         ctx.fillRect(cx - cWidth/2 + 2, pistonY, cWidth - 4, cy + cHeight/2 - pistonY - 2);
 
-        // Тиск (P ~ 1/V для ізотермічного процесу T=const)
         const constT = 10000;
         const pressure = constT / currentParams.gasPistonVolume;
 
-        // Зберігаємо дані для графіка
         pvData.push({ v: currentParams.gasPistonVolume, p: pressure });
-        if (pvData.length > 500) pvData.shift(); // Обмеження точок
+        if (pvData.length > 500) pvData.shift(); 
 
-        // Малюємо P-V діаграму з правого боку
         const gx = canvas.width / 2 + 50;
         const gy = canvas.height / 2 + 100;
         const gWidth = 350;
         const gHeight = 250;
 
-        ctx.strokeStyle = '#64748b'; // Осі координат
+        ctx.strokeStyle = '#64748b'; 
         ctx.lineWidth = 2;
         ctx.beginPath();
-        // Вісь P
         ctx.moveTo(gx, gy - gHeight - 20); ctx.lineTo(gx, gy); 
-        // Вісь V
         ctx.lineTo(gx + gWidth + 20, gy);
         ctx.stroke();
 
-        // Стрілки на осях
         ctx.fillStyle = '#64748b';
         ctx.beginPath(); ctx.moveTo(gx, gy - gHeight - 20); ctx.lineTo(gx - 5, gy - gHeight - 10); ctx.lineTo(gx + 5, gy - gHeight - 10); ctx.fill();
         ctx.beginPath(); ctx.moveTo(gx + gWidth + 20, gy); ctx.lineTo(gx + gWidth + 10, gy - 5); ctx.lineTo(gx + gWidth + 10, gy + 5); ctx.fill();
 
         ctx.fillStyle = '#fff'; ctx.font = '14px Inter';
-        ctx.fillText('V (Об\'єм)', gx + gWidth + 10, gy + 5);
-        ctx.fillText('P (Тиск)', gx - 10, gy - gHeight - 10);
+        ctx.fillText(`${language === 'uk' ? 'V (Об\'єм)' : 'V (Objem)'}`, gx + gWidth + 10, gy + 5);
+        ctx.fillText(`${language === 'uk' ? 'P (Тиск)' : 'P (Tlak)'}`, gx - 10, gy - gHeight - 10);
 
-        // Теоретична крива P = const/V
         ctx.beginPath();
         ctx.strokeStyle = 'rgba(255,255,255,0.2)';
         for (let v = 30; v <= 200; v += 5) {
@@ -450,21 +427,18 @@ export default function Grade10() {
         }
         ctx.stroke();
 
-        // Поточна точка
         const currentPx = gx + (currentParams.gasPistonVolume / 200) * gWidth;
         const currentPy = gy - (pressure / 350) * gHeight;
 
         ctx.beginPath(); ctx.arc(currentPx, currentPy, 6, 0, Math.PI * 2);
         ctx.fillStyle = '#ef4444'; ctx.fill();
 
-        // Проєкції поточної точки на осі
         ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
         ctx.setLineDash([5, 5]);
         ctx.beginPath(); ctx.moveTo(currentPx, currentPy); ctx.lineTo(currentPx, gy); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(currentPx, currentPy); ctx.lineTo(gx, currentPy); ctx.stroke();
         ctx.setLineDash([]);
 
-        // Історія (шлейф точок)
         ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
         pvData.forEach(pt => {
           const pxx = gx + (pt.v / 200) * gWidth;
@@ -472,14 +446,13 @@ export default function Grade10() {
           ctx.beginPath(); ctx.arc(pxx, pyy, 2, 0, Math.PI*2); ctx.fill();
         });
 
-        // Інфо текст
         ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Inter';
-        ctx.fillText(`Об'єм = ${currentParams.gasPistonVolume}`, cx - 50, cy + cHeight/2 + 40);
-        ctx.fillText(`Тиск = ${pressure.toFixed(1)}`, cx - 50, cy + cHeight/2 + 65);
+        ctx.fillText(`${language === 'uk' ? 'Об\'єм' : 'Objem'} = ${currentParams.gasPistonVolume}`, cx - 50, cy + cHeight/2 + 40);
+        ctx.fillText(`${language === 'uk' ? 'Тиск' : 'Tlak'} = ${pressure.toFixed(1)}`, cx - 50, cy + cHeight/2 + 65);
         ctx.fillStyle = '#f59e0b'; ctx.font = '14px Inter';
-        ctx.fillText('P = const / V (Ізотермічний процес T=const)', gx + 80, gy - gHeight + 20);
+        ctx.fillText(language === 'uk' ? 'P = const / V (Ізотермічний процес T=const)' : 'P = konst / V (Izotermický děj T=konst)', gx + 80, gy - gHeight + 20);
         ctx.fillStyle = '#94a3b8'; ctx.font = '12px Inter';
-        ctx.fillText('Робота газу дорівнює площі під графіком', gx + 80, gy - gHeight + 40);
+        ctx.fillText(language === 'uk' ? 'Робота газу дорівнює площі під графіком' : 'Práce plynu odpovídá ploše pod grafem', gx + 80, gy - gHeight + 40);
 
         animationId = requestAnimationFrame(renderGasWork);
       };
@@ -490,7 +463,7 @@ export default function Grade10() {
         if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
       };
     }
-  }, [activeExperiment, resetTrigger]);
+  }, [activeExperiment, resetTrigger, language]);
 
   useEffect(() => {
     if (activeExperiment === 1 && engineRef.current) {

@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import useStore from '../store/useStore';
 import Matter from 'matter-js';
+import translations from '../locales/translations';
 
 export default function Grade7() {
-  const { activeExperiment, grade7Params, showVectors, resetTrigger } = useStore();
+  const { activeExperiment, grade7Params, showVectors, resetTrigger, language } = useStore();
+  const t = translations[language];
   const canvasRef = useRef(null);
   const matterContainerRef = useRef(null);
 
@@ -145,10 +147,10 @@ export default function Grade7() {
         ctx.strokeStyle = 'rgba(255,255,255,0.1)';
         ctx.strokeRect(10, 10, 200, 75);
         ctx.fillStyle = '#fff'; ctx.font = '13px Inter';
-        ctx.fillText(`ρ тіла: ${rhoBody} кг/м³`, 20, 30);
-        ctx.fillText(`ρ рідини: ${rhoLiq} кг/м³`, 20, 48);
-        ctx.fillText(`Занурення: ${(submergedRatio * 100).toFixed(0)}%`, 20, 66);
-        ctx.fillText(rhoBody >= rhoLiq ? '→ ТОНЕ' : '→ ПЛАВАЄ', 20, 80);
+        ctx.fillText(`${t.ui.densityObj}: ${rhoBody} кг/м³`, 20, 30);
+        ctx.fillText(`${t.ui.densityLiq}: ${rhoLiq} кг/м³`, 20, 48);
+        ctx.fillText(`${t.ui.submersion}: ${(submergedRatio * 100).toFixed(0)}%`, 20, 66);
+        ctx.fillText(rhoBody >= rhoLiq ? `→ ${t.ui.sinks}` : `→ ${t.ui.floats}`, 20, 80);
 
         if (showVectors) {
           const cx = bx + size / 2;
@@ -258,7 +260,7 @@ export default function Grade7() {
         }
         if (v === 0) {
           ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 14px Inter';
-          ctx.fillText('v = 0 м/с', carX + carW + 10, cy - 15);
+          ctx.fillText(`v = 0 ${language === 'uk' ? 'м/с' : 'm/s'}`, carX + carW + 10, cy - 15);
         }
 
         totalDistRef.current += Math.abs(v * 2);
@@ -284,10 +286,10 @@ export default function Grade7() {
 
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.font = '12px Inter';
-        ctx.fillText('S (м)', gx + 5, gy + 20);
-        ctx.fillText('t (с)', gx + gW - 25, gy + gH - gP + 18);
+        ctx.fillText(language === 'uk' ? 'S (м)' : 's (m)', gx + 5, gy + 20);
+        ctx.fillText(language === 'uk' ? 't (с)' : 't (s)', gx + gW - 25, gy + gH - gP + 18);
         ctx.font = 'bold 12px Inter';
-        ctx.fillText('Графік шляху S(t)', gx + gP + 10, gy + 18);
+        ctx.fillText(t.ui.pathGraph, gx + gP + 10, gy + 18);
         
         // Позначки на осях
         ctx.font = '10px Inter';
@@ -399,7 +401,7 @@ export default function Grade7() {
         // Інфо
         ctx.fillStyle = '#fff';
         ctx.font = '14px Inter';
-        ctx.fillText(`Рівень води: ${Math.round(waterLvl * 100)}%`, tankX - 20, tankY - 15);
+        ctx.fillText(`${t.ui.waterLevel}: ${Math.round(waterLvl * 100)}%`, tankX - 20, tankY - 15);
       }
 
       timeRef.current++;
@@ -616,15 +618,15 @@ export default function Grade7() {
       const torque1 = (m1 * d1).toFixed(1);
       const torque2 = (m2 * d2).toFixed(1);
 
-      ctx.fillText(`Лівий момент: ${m1} кг × ${d1} = ${torque1}`, 20, 30);
-      ctx.fillText(`Правий момент: ${m2} кг × ${d2} = ${torque2}`, 20, 50);
+      ctx.fillText(`${t.ui.leftMoment}: ${m1} кг × ${d1} = ${torque1}`, 20, 30);
+      ctx.fillText(`${t.ui.rightMoment}: ${m2} кг × ${d2} = ${torque2}`, 20, 50);
 
       if (Math.abs(torque1 - torque2) < 0.5) {
         ctx.fillStyle = '#4ade80';
-        ctx.fillText('РІВНОВАГА', 20, 75);
+        ctx.fillText(t.ui.equilibrium, 20, 75);
       } else {
         ctx.fillStyle = '#f87171';
-        ctx.fillText('НЕМАЄ РІВНОВАГИ', 20, 75);
+        ctx.fillText(t.ui.noEquilibrium, 20, 75);
       }
     });
 

@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import useStore from '../store/useStore';
+import translations from '../locales/translations';
 
 export default function Grade9() {
-  const { activeExperiment, grade9Params, showVectors, resetTrigger } = useStore();
+  const { activeExperiment, grade9Params, showVectors, resetTrigger, language } = useStore();
+  const t = translations[language];
   const canvasRef = useRef(null);
 
   const [laserPos, setLaserPos] = useState({ x: 100, y: 350, angle: 0 });
@@ -65,21 +67,17 @@ export default function Grade9() {
         const hw = lensPos.width / 2;
         const hh = lensPos.height / 2;
 
-        // Динамічна зміна кривизни в залежності від показника заломлення n (1.0 до 3.0)
-        // Обмежуємо curveFactor щоб лінза не складалася сама в себе
         const curveFactor = Math.min((n - 1) / 2, 0.6);
         
         if (lensType === 'prism') {
           ctx.rect(-hw, -hh, lensPos.width, lensPos.height);
         } else if (lensType === 'convex') {
-          // Випуклість обмежена щоб контрольні точки не перетинались
           const bulge = hw * (1 + curveFactor * 2.5);
           ctx.moveTo(0, -hh);
           ctx.bezierCurveTo(bulge, -hh * 0.5, bulge, hh * 0.5, 0, hh);
           ctx.bezierCurveTo(-bulge, hh * 0.5, -bulge, -hh * 0.5, 0, -hh);
           ctx.closePath();
         } else if (lensType === 'concave') {
-          // Увігнутість — контрольні точки всередину, але обмежені
           const indent = hw * curveFactor * 1.2;
           ctx.moveTo(-hw, -hh);
           ctx.lineTo(hw, -hh);
@@ -99,7 +97,6 @@ export default function Grade9() {
         ctx.fill(); ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // Індикатор обертання лінзи (світлий кружечок нагорі)
         ctx.beginPath();
         ctx.arc(0, -hh - 15, 6, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255,255,255,0.7)';
@@ -109,7 +106,6 @@ export default function Grade9() {
 
         ctx.restore();
 
-        // Фокусні точки (тільки для лінз)
         if (lensType !== 'prism') {
           const f = (lensPos.height / 2) / Math.max(0.1, n - 1);
           const cosA = Math.cos(lensAngle);
@@ -133,7 +129,6 @@ export default function Grade9() {
         for (let j = 0; j < 5; j++) ctx.fillRect(30, (j - 2) * 10 - 2, 8, 4);
         ctx.shadowBlur = 0;
         
-        // Індикатор обертання лазера
         ctx.beginPath(); ctx.arc(45, 0, 5, 0, Math.PI*2);
         ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
         ctx.restore();
@@ -201,7 +196,6 @@ export default function Grade9() {
           } else {
             const f = (lensPos.height / 2) / Math.max(0.1, n - 1);
             const cosA = Math.cos(lensAngle), sinA = Math.sin(lensAngle);
-            const lensNx = cosA;
             const denom = rayDirX * cosA + rayDirY * sinA;
             
             if (Math.abs(denom) < 0.001) {
@@ -267,21 +261,19 @@ export default function Grade9() {
         const lcy = lensPos.y + lensPos.height / 2;
         const mType = grade9Params.mirrorType || 'flat';
 
-        // Оптична вісь
         ctx.setLineDash([5, 10]);
         ctx.strokeStyle = 'rgba(255,255,255,0.15)';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(0, lcy); ctx.lineTo(canvas.width, lcy); ctx.stroke();
         ctx.setLineDash([]);
 
-        // Малюємо дзеркало з поворотом
         ctx.save();
         ctx.translate(lcx, lcy);
         ctx.rotate(lensAngle);
 
         const hh = lensPos.height / 2;
-        const radius = hh * 1.5; // Радіус кривизни
-        const f = radius / 2; // Фокус
+        const radius = hh * 1.5; 
+        const f = radius / 2; 
 
         ctx.strokeStyle = '#94a3b8';
         ctx.lineWidth = 4;
@@ -292,15 +284,12 @@ export default function Grade9() {
           ctx.moveTo(0, -hh);
           ctx.lineTo(0, hh);
         } else if (mType === 'concave') {
-          // Увігнуте (центр кривизни зліва)
           ctx.arc(-radius + 20, 0, radius, -Math.asin(hh/radius), Math.asin(hh/radius));
         } else if (mType === 'convex') {
-          // Опукле (центр кривизни зправа)
           ctx.arc(radius - 20, 0, radius, Math.PI - Math.asin(hh/radius), Math.PI + Math.asin(hh/radius));
         }
         ctx.stroke();
 
-        // Задня частина дзеркала (штрихування)
         ctx.strokeStyle = '#475569';
         ctx.lineWidth = 1;
         for (let y = -hh; y <= hh; y += 10) {
@@ -315,17 +304,15 @@ export default function Grade9() {
           }
         }
 
-        // Індикатор обертання
         ctx.beginPath();
         ctx.arc(0, -hh - 15, 6, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fill();
         ctx.strokeStyle = '#38bdf8'; ctx.stroke();
         ctx.restore();
 
-        // Фокусні точки
         if (mType !== 'flat') {
           const sign = mType === 'concave' ? -1 : 1;
-          const focusDist = f - 20; // приблизно
+          const focusDist = f - 20; 
           const cosA = Math.cos(lensAngle), sinA = Math.sin(lensAngle);
           ctx.fillStyle = '#f59e0b';
           ctx.beginPath(); ctx.arc(lcx + sign * focusDist * cosA, lcy + sign * focusDist * sinA, 5, 0, Math.PI * 2); ctx.fill();
@@ -333,7 +320,6 @@ export default function Grade9() {
           ctx.fillText('F', lcx + sign * focusDist * cosA - 4, lcy + sign * focusDist * sinA - 12);
         }
 
-        // Лазер
         ctx.save();
         ctx.translate(laserPos.x, laserPos.y);
         ctx.rotate(laserPos.angle);
@@ -347,7 +333,6 @@ export default function Grade9() {
         ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fill();
         ctx.restore();
 
-        // Промені
         const rayDirX = Math.cos(laserPos.angle);
         const rayDirY = Math.sin(laserPos.angle);
 
@@ -364,52 +349,37 @@ export default function Grade9() {
 
           for (let s = 0; s < 1500; s++) {
             rx += dx * 2; ry += dy * 2;
-            
-            // Локальні координати дзеркала
             const lx = (rx - lcx) * cosA + (ry - lcy) * sinA;
             const ly = -(rx - lcx) * sinA + (ry - lcy) * cosA;
 
             if (ly >= -hh && ly <= hh) {
               let surfaceX = 0;
-              let normalLx = -1, normalLy = 0; // Нормаль завжди дивиться "вліво" в локальних координатах
+              let normalLx = -1, normalLy = 0; 
 
               if (mType === 'flat') {
                 surfaceX = 0;
                 normalLx = -1; normalLy = 0;
               } else if (mType === 'concave') {
                 surfaceX = -radius + 20 + Math.sqrt(Math.max(0, radius*radius - ly*ly));
-                // Нормаль вказує до центру кривизни
                 normalLx = -Math.sqrt(Math.max(0, radius*radius - ly*ly)) / radius;
                 normalLy = -ly / radius;
               } else {
                 surfaceX = radius - 20 - Math.sqrt(Math.max(0, radius*radius - ly*ly));
-                // Нормаль від центру кривизни
                 normalLx = -Math.sqrt(Math.max(0, radius*radius - ly*ly)) / radius;
-                normalLy = ly / radius; // Знаки треба ретельно підбирати для правильного відбиття
+                normalLy = ly / radius; 
               }
 
               if (Math.abs(lx - surfaceX) < 2) {
-                // Відбивання!
                 hit = true;
                 ctx.lineTo(rx, ry);
-                
-                // Переводимо локальну нормаль у глобальну
                 let nx = normalLx * cosA - normalLy * sinA;
                 let ny = normalLx * sinA + normalLy * cosA;
-                
-                // Перевірка напрямку нормалі (вона має бути назустріч променю)
                 if (dx * nx + dy * ny > 0) { nx = -nx; ny = -ny; }
-
-                // Вектор відбивання: R = D - 2(D·N)N
                 const dot = dx * nx + dy * ny;
                 dx = dx - 2 * dot * nx;
                 dy = dy - 2 * dot * ny;
-                
-                // Нормалізуємо щоб уникнути помилок округлення
                 const m = Math.hypot(dx, dy);
                 dx /= m; dy /= m;
-                
-                // Зсув щоб не застрягти
                 rx += dx * 3; ry += dy * 3;
                 break;
               }
@@ -428,18 +398,14 @@ export default function Grade9() {
       } else if (activeExperiment === 4) {
         // Дослід 4: Ефект Доплера
         const cy = canvas.height / 2;
-        const vSound = 340; // швидкість звуку
+        const vSound = 340; 
         const vSource = grade9Params.dopplerSpeed || 0;
         
-        // Зберігаємо хвилі в масиві
         if (!window.dopplerWaves) window.dopplerWaves = [];
-        
-        // Джерело рухається
         if (!window.sourceX) window.sourceX = 0;
-        window.sourceX += (vSource / vSound) * 3; // Масштаб швидкості
+        window.sourceX += (vSource / vSound) * 3; 
         if (window.sourceX > canvas.width + 100) window.sourceX = -100;
         
-        // Викидаємо нову хвилю кожні N кадрів
         if (time % 15 === 0) {
           window.dopplerWaves.push({ x: window.sourceX, y: cy, radius: 0 });
         }
@@ -447,29 +413,25 @@ export default function Grade9() {
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Оновлюємо та малюємо хвилі
         ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 2;
         window.dopplerWaves.forEach((wave, idx) => {
-          wave.radius += 3; // Швидкість звуку в пікселях на кадр
-          ctx.globalAlpha = Math.max(0, 1 - wave.radius / 600); // Затухання
+          wave.radius += 3; 
+          ctx.globalAlpha = Math.max(0, 1 - wave.radius / 600); 
           ctx.beginPath();
           ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
           ctx.stroke();
         });
         ctx.globalAlpha = 1;
         
-        // Видаляємо старі хвилі
         window.dopplerWaves = window.dopplerWaves.filter(w => w.radius < 600);
 
-        // Джерело звуку
         ctx.fillStyle = '#ef4444';
         ctx.beginPath();
         ctx.arc(window.sourceX, cy, 8, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 15; ctx.shadowColor = '#ef4444'; ctx.fill(); ctx.shadowBlur = 0;
         
-        // Вектор швидкості
         if (showVectors && vSource > 0) {
           ctx.strokeStyle = '#22c55e';
           ctx.lineWidth = 3;
@@ -479,12 +441,11 @@ export default function Grade9() {
           ctx.lineTo(window.sourceX + vSource * 0.2, cy - 4); ctx.lineTo(window.sourceX + vSource * 0.2, cy + 4); ctx.fill();
           
           ctx.font = '14px Inter';
-          ctx.fillText(`v = ${vSource} м/с (Mach ${(vSource/vSound).toFixed(2)})`, window.sourceX - 30, cy - 20);
+          ctx.fillText(`v = ${vSource} ${language === 'uk' ? 'м/с' : 'm/s'} (Mach ${(vSource/vSound).toFixed(2)})`, window.sourceX - 30, cy - 20);
         }
 
       } else if (activeExperiment === 2) {
-        // Дослід 2: Хвилі
-        const amplitude = grade9Params.waveAmplitude * 60; // Збільшено
+        const amplitude = grade9Params.waveAmplitude * 60; 
         const frequency = grade9Params.waveFrequency * 0.05;
         const cy = effectiveWaveGenY;
 
@@ -515,7 +476,7 @@ export default function Grade9() {
 
     render();
     return () => { window.removeEventListener('resize', resize); cancelAnimationFrame(animationId); };
-  }, [activeExperiment, grade9Params, laserPos, lensPos, lensAngle, waveGenY, showVectors, resetTrigger]);
+  }, [activeExperiment, grade9Params, laserPos, lensPos, lensAngle, waveGenY, showVectors, resetTrigger, language, t]);
 
   const handleMouseDown = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
@@ -525,23 +486,19 @@ export default function Grade9() {
     const lcy = lensPos.y + lensPos.height / 2;
 
     if (activeExperiment === 1 || activeExperiment === 3) {
-      // Rotate lens via handle
       const cosA = Math.cos(lensAngle), sinA = Math.sin(lensAngle);
       const hx = lcx + (-lensPos.height/2 - 15) * -sinA;
       const hy = lcy + (-lensPos.height/2 - 15) * cosA;
       if (Math.hypot(mx - hx, my - hy) < 25) { setDraggingItem('lens-rotate'); return; }
 
-      // Rotate laser via handle
       const lx = laserPos.x + Math.cos(laserPos.angle) * 45;
       const ly = laserPos.y + Math.sin(laserPos.angle) * 45;
       if (Math.hypot(mx - lx, my - ly) < 25) { setDraggingItem('laser-angle'); return; }
 
-      // Center of lens/mirror
       if (mx > lensPos.x - 30 && mx < lensPos.x + lensPos.width + 30 && my > lensPos.y && my < lensPos.y + lensPos.height) {
         setDraggingItem('lens'); return;
       }
       
-      // Center of laser
       if (Math.hypot(mx - laserPos.x, my - laserPos.y) < 40) {
         setDraggingItem('laser'); return;
       }

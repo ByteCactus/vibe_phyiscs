@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import useStore from '../store/useStore';
+import translations from '../locales/translations';
 
 export default function Grade11() {
-  const { activeExperiment, grade11Params, showVectors, resetTrigger } = useStore();
+  const { activeExperiment, grade11Params, showVectors, resetTrigger, language } = useStore();
+  const t = translations[language];
   const canvasRef = useRef(null);
   const atomsRef = useRef([]);
   const particlesRef = useRef([]);
@@ -79,7 +81,6 @@ export default function Grade11() {
           }
         }
 
-        // Випромінювач частинок
         const eGrad = ctx.createLinearGradient(0, emitterY-20, 30, emitterY+20);
         eGrad.addColorStop(0, '#475569'); eGrad.addColorStop(1, '#0f172a');
         ctx.fillStyle = eGrad;
@@ -158,7 +159,6 @@ export default function Grade11() {
             ctx.fillStyle = radGrad;
             ctx.shadowColor = '#10b981'; ctx.shadowBlur = 15; ctx.fill(); ctx.shadowBlur = 0;
             
-            // Електрон
             const ex = atom.x + Math.cos(time * 0.1 + atom.orbitOffset) * 12;
             const ey = atom.y + Math.sin(time * 0.1 + atom.orbitOffset) * 12;
             ctx.beginPath(); ctx.arc(ex, ey, 2, 0, Math.PI * 2); ctx.fillStyle = '#60a5fa'; ctx.fill();
@@ -195,7 +195,8 @@ export default function Grade11() {
         const ratio = remaining / atomsRef.current.length;
         ctx.beginPath(); ctx.arc(gx + graphWidth * (1 - ratio), gy + graphHeight * (1 - ratio), 4, 0, Math.PI * 2);
         ctx.fillStyle = '#10b981'; ctx.shadowBlur = 10; ctx.shadowColor = '#10b981'; ctx.fill(); ctx.shadowBlur = 0;
-        ctx.fillStyle = '#fff'; ctx.font = '12px Inter'; ctx.fillText(`Активні ядра: ${remaining}`, gx + graphWidth/2, gy + 20);
+        ctx.fillStyle = '#fff'; ctx.font = '12px Inter'; 
+        ctx.fillText(`${language === 'uk' ? 'Активні ядра' : 'Aktivní jádra'}: ${remaining}`, gx + graphWidth/2, gy + 20);
       } else if (activeExperiment === 3) {
         // Дослід 3: Електромагнітна індукція
         const currentParams = useStore.getState().grade11Params;
@@ -205,29 +206,22 @@ export default function Grade11() {
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Рух магніту
         const speedMultiplier = currentParams.magnetSpeed * 0.001;
         const magnetX = cx + Math.sin(time * speedMultiplier) * 300;
         const magnetV = Math.cos(time * speedMultiplier) * 300 * speedMultiplier;
 
-        // Котушка
         const coilWidth = 150;
         const coilHeight = 100;
         const turns = currentParams.inductionCoilTurns;
-        const turnSpacing = coilWidth / Math.min(turns, 50); // Візуалізуємо макс 50 витків
+        const turnSpacing = coilWidth / Math.min(turns, 50); 
 
-        // Індукційний струм (похідна від потоку)
-        // Потік: Gaussian e^(-(x-cx)^2 / w^2)
         const w = 150;
         const flux = Math.exp(-Math.pow(magnetX - cx, 2) / (w * w));
         const dFluxDx = -2 * (magnetX - cx) / (w * w) * flux;
         const dFluxDt = dFluxDx * magnetV;
         
-        // EMF = -N * dFlux/dt
-        // Для візуалізації нормуємо
         const emf = -turns * dFluxDt * 20; 
         
-        // Малюємо дріт від котушки до гальванометра
         ctx.strokeStyle = '#475569';
         ctx.lineWidth = 4;
         ctx.beginPath();
@@ -237,7 +231,6 @@ export default function Grade11() {
         ctx.lineTo(cx + coilWidth/2, cy + coilHeight/2);
         ctx.stroke();
 
-        // Гальванометр
         const galvX = cx;
         const galvY = cy + 150;
         ctx.fillStyle = '#334155';
@@ -249,17 +242,15 @@ export default function Grade11() {
         ctx.textAlign = 'center';
         ctx.fillText('A', galvX, galvY + 20);
 
-        // Стрілка гальванометра
         ctx.save();
         ctx.translate(galvX, galvY);
-        // Обмежуємо кут стрілки
         const maxAngle = Math.PI / 4;
         let angle = emf * 0.05;
         if (angle > maxAngle) angle = maxAngle;
         if (angle < -maxAngle) angle = -maxAngle;
         
         if (!window.galvAngle) window.galvAngle = 0;
-        window.galvAngle += (angle - window.galvAngle) * 0.15; // Smoothing
+        window.galvAngle += (angle - window.galvAngle) * 0.15; 
         
         ctx.rotate(window.galvAngle);
         ctx.strokeStyle = '#ef4444';
@@ -268,19 +259,16 @@ export default function Grade11() {
         ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2); ctx.fill();
         ctx.restore();
 
-        // Візуалізація електронів у дроті
         if (Math.abs(emf) > 0.1) {
            ctx.fillStyle = '#3b82f6';
            const eSpeed = emf * 0.5;
            for (let i = 0; i < 5; i++) {
-             // Проста анімація вздовж дроту
              let pos = (time * Math.abs(eSpeed) + i * 40) % 200;
              let px, py;
              if (pos < 50) { px = cx - coilWidth/2; py = cy + coilHeight/2 + pos; }
              else if (pos < 150) { px = cx - coilWidth/2 + (pos - 50); py = cy + 150; }
              else { px = cx + coilWidth/2; py = cy + 150 - (pos - 150); }
              
-             // Реверс напрямку
              if (emf < 0) {
                if (pos < 50) { px = cx + coilWidth/2; py = cy + coilHeight/2 + pos; }
                else if (pos < 150) { px = cx + coilWidth/2 - (pos - 50); py = cy + 150; }
@@ -291,7 +279,6 @@ export default function Grade11() {
            }
         }
 
-        // Задня частина витків
         ctx.strokeStyle = '#b45309';
         ctx.lineWidth = 3;
         for (let i = 0; i <= coilWidth; i += turnSpacing) {
@@ -300,7 +287,6 @@ export default function Grade11() {
           ctx.stroke();
         }
 
-        // Магніт (проходить крізь котушку)
         const mWidth = 120;
         const mHeight = 40;
         ctx.save();
@@ -318,7 +304,6 @@ export default function Grade11() {
         ctx.strokeRect(-mWidth/2, -mHeight/2, mWidth, mHeight);
         ctx.restore();
 
-        // Передня частина витків (перекриває магніт)
         ctx.strokeStyle = '#f59e0b';
         ctx.lineWidth = 4;
         for (let i = 0; i <= coilWidth; i += turnSpacing) {
@@ -327,9 +312,8 @@ export default function Grade11() {
           ctx.stroke();
         }
         
-        // Інфо
         ctx.fillStyle = '#fff';
-        ctx.fillText(`I = ${emf.toFixed(2)} у.о.`, galvX, galvY - 50);
+        ctx.fillText(`I = ${emf.toFixed(2)} ${language === 'uk' ? 'у.о.' : 'j.'}`, galvX, galvY - 50);
 
       } else if (activeExperiment === 4) {
         // Дослід 4: Фотоефект
@@ -343,10 +327,8 @@ export default function Grade11() {
         const wl = currentParams.photonWavelength;
         const workFunc = currentParams.workFunction;
         
-        // Енергія фотона: E = hc / λ. Для нм та еВ: E ≈ 1240 / λ
         const photonEnergy = 1240 / wl;
         
-        // Колір лазера/світла на основі довжини хвилі
         let r = 0, g = 0, b = 0;
         if (wl >= 380 && wl < 440) { r = -(wl - 440) / (440 - 380); b = 1; }
         else if (wl >= 440 && wl < 490) { g = (wl - 440) / (490 - 440); b = 1; }
@@ -359,7 +341,6 @@ export default function Grade11() {
         const lightColor = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${intensity})`;
         const isUV = wl < 400;
 
-        // Катод (метал)
         const plateX = cx - 150;
         const plateY = cy;
         const plateWidth = 20;
@@ -370,7 +351,6 @@ export default function Grade11() {
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
         ctx.strokeRect(plateX - plateWidth/2, plateY - plateHeight/2, plateWidth, plateHeight);
 
-        // Анод (сітка)
         const anodeX = cx + 150;
         ctx.strokeStyle = '#475569';
         ctx.beginPath(); ctx.moveTo(anodeX, plateY - plateHeight/2); ctx.lineTo(anodeX, plateY + plateHeight/2); ctx.stroke();
@@ -378,7 +358,6 @@ export default function Grade11() {
           ctx.beginPath(); ctx.moveTo(anodeX - 5, y); ctx.lineTo(anodeX + 5, y); ctx.stroke();
         }
 
-        // Лампа (випромінює фотони)
         const lampX = cx - 250;
         const lampY = cy - 200;
         
@@ -388,10 +367,8 @@ export default function Grade11() {
         ctx.fillStyle = lightColor;
         ctx.shadowBlur = 20; ctx.shadowColor = lightColor; ctx.fill(); ctx.shadowBlur = 0;
 
-        // Керування частинками
         if (!window.photoParticles) window.photoParticles = { photons: [], electrons: [] };
         
-        // Генерація фотонів
         if (time % 5 === 0) {
            const targetY = plateY + (Math.random() - 0.5) * plateHeight * 0.8;
            const angle = Math.atan2(targetY - lampY, plateX - lampX);
@@ -402,27 +379,19 @@ export default function Grade11() {
            });
         }
 
-        // Оновлення та малювання фотонів
         ctx.strokeStyle = isUV ? '#a855f7' : lightColor;
         ctx.lineWidth = 2;
         for (let i = window.photoParticles.photons.length - 1; i >= 0; i--) {
           const p = window.photoParticles.photons[i];
           ctx.beginPath();
-          // Хвиляста лінія для фотона
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(p.x + p.vx * 2 + Math.cos(time) * 3, p.y + p.vy * 2 + Math.sin(time) * 3);
           ctx.stroke();
-
           p.x += p.vx; p.y += p.vy;
-
-          // Зіткнення з металом
           if (p.x >= plateX - plateWidth/2) {
              window.photoParticles.photons.splice(i, 1);
-             // Фотоефект: якщо енергія більша за роботу виходу
              if (photonEnergy > workFunc) {
-               // Кінетична енергія E_k = E - A
                const ek = photonEnergy - workFunc;
-               // Швидкість пропорційна sqrt(E_k)
                const v = Math.sqrt(ek) * 3;
                window.photoParticles.electrons.push({
                  x: plateX + plateWidth/2,
@@ -433,21 +402,18 @@ export default function Grade11() {
           }
         }
 
-        // Оновлення та малювання електронів
         ctx.fillStyle = '#3b82f6';
         ctx.shadowBlur = 10; ctx.shadowColor = '#3b82f6';
         for (let i = window.photoParticles.electrons.length - 1; i >= 0; i--) {
           const e = window.photoParticles.electrons[i];
           ctx.beginPath(); ctx.arc(e.x, e.y, 3, 0, Math.PI*2); ctx.fill();
           e.x += e.vx; e.y += e.vy;
-          
           if (e.x > anodeX) {
             window.photoParticles.electrons.splice(i, 1);
           }
         }
         ctx.shadowBlur = 0;
 
-        // Текст інфо
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'left';
         ctx.font = '16px Inter';
@@ -457,11 +423,11 @@ export default function Grade11() {
         if (photonEnergy > workFunc) {
           ctx.fillStyle = '#22c55e';
           ctx.fillText(`E_кін = ${(photonEnergy - workFunc).toFixed(2)} еВ`, 20, 90);
-          ctx.fillText('Струм: ЙДЕ', 20, 115);
+          ctx.fillText(`${language === 'uk' ? 'Струм: ЙДЕ' : 'Proud: TEČE'}`, 20, 115);
         } else {
           ctx.fillStyle = '#ef4444';
-          ctx.fillText('E_кін = 0 еВ', 20, 90);
-          ctx.fillText('Струм: НЕМАЄ', 20, 115);
+          ctx.fillText(`E_кін = 0 еВ`, 20, 90);
+          ctx.fillText(`${language === 'uk' ? 'Струм: НЕМАЄ' : 'Proud: NETEČE'}`, 20, 115);
         }
       }
 
@@ -475,7 +441,7 @@ export default function Grade11() {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animationId);
     };
-  }, [activeExperiment, grade11Params, showVectors, resetTrigger, emitterY]);
+  }, [activeExperiment, grade11Params, showVectors, resetTrigger, emitterY, language]);
 
   const handleMouseDown = (e) => {
     if (activeExperiment !== 1) return;
@@ -497,6 +463,13 @@ export default function Grade11() {
 
   const handleMouseUp = () => setDragging(false);
 
+  const getHint = () => {
+    if (activeExperiment === 1) return language === 'uk' ? "Перетягуйте випромінювач частинок вгору або вниз." : "Přetáhněte zářič částic nahoru nebo dolů.";
+    if (activeExperiment === 2) return language === 'uk' ? "Змінюйте ймовірність розпаду для симуляції періоду напіврозпаду." : "Měňte pravděpodobnost rozpadu pro simulaci poločasu rozpadu.";
+    if (activeExperiment === 3) return language === 'uk' ? "Змінюйте швидкість магніту та кількість витків котушки." : "Měňte rychlost magnetu a počet závitů cívky.";
+    return language === 'uk' ? "Змінюйте довжину хвилі світла та роботу виходу металу." : "Měňte vlnovou délku světla a výstupní práci kovu.";
+  };
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <canvas ref={canvasRef} 
@@ -504,14 +477,7 @@ export default function Grade11() {
         onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
       />
       <div style={{ position: 'absolute', top: '20px', left: '20px', color: 'rgba(255,255,255,0.7)', pointerEvents: 'none' }}>
-        <p>{activeExperiment === 1 
-          ? "Перетягуйте випромінювач частинок вгору або вниз." 
-          : activeExperiment === 2
-          ? "Змінюйте ймовірність розпаду для симуляції періоду напіврозпаду."
-          : activeExperiment === 3
-          ? "Змінюйте швидкість магніту та кількість витків котушки."
-          : "Змінюйте довжину хвилі світла та роботу виходу металу."}
-        </p>
+        <p>{getHint()}</p>
       </div>
     </div>
   );
