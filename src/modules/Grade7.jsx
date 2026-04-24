@@ -21,6 +21,26 @@ export default function Grade7() {
   const graphDataRef = useRef([]); // {t, s}
   const totalDistRef = useRef(0);
 
+  // --- Кінематика та тертя refs ---
+  const blockPosRef = useRef(0);
+  const blockVelRef = useRef(0);
+  const blockAccRef = useRef(0);
+  const frictionGraphRef = useRef([]); // {t, v}
+  const totalFrictionDistRef = useRef(0);
+
+  // --- Гідравлічний refs ---
+  const pistonPosRef = useRef(0);
+  const waterLevelRef = useRef(0.5);
+  const animationTimeRef = useRef(0);
+
+  // --- Оптика refs ---
+  const lightXRef = useRef(100);
+  const lightYRef = useRef(100);
+  const obstacleXRef = useRef(200);
+  const obstacleYRef = useRef(150);
+  const screenXRef = useRef(350);
+  const shadowRaysRef = useRef([]);
+
   // --- Matter.js refs (Важіль) ---
   const engineRef = useRef(null);
   const renderRef = useRef(null);
@@ -39,6 +59,26 @@ export default function Grade7() {
     carAbsPosRef.current = 0;
     graphDataRef.current = [];
     totalDistRef.current = 0;
+    
+    // Кінематика та тертя
+    blockPosRef.current = 0;
+    blockVelRef.current = 0;
+    blockAccRef.current = 0;
+    frictionGraphRef.current = [];
+    totalFrictionDistRef.current = 0;
+    
+    // Гідравлічний прес
+    pistonPosRef.current = 0;
+    waterLevelRef.current = 0.5;
+    animationTimeRef.current = 0;
+    
+    // Оптика
+    lightXRef.current = 100;
+    lightYRef.current = 100;
+    obstacleXRef.current = 200;
+    obstacleYRef.current = 150;
+    screenXRef.current = 350;
+    shadowRaysRef.current = [];
     forceRender({});
   }, [activeExperiment, resetTrigger]);
 

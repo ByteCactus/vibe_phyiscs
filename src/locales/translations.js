@@ -10,7 +10,15 @@ const translations = {
     },
     expNames: {
       6: { 1: 'Будова речовини', 2: 'Густина та Об\'єм', 3: 'Магнітні властивості' },
-      7: { 1: 'Закон Архімеда', 2: 'Рівномірний рух', 3: 'Важіль', 4: 'Закон Паскаля' },
+       7: { 
+         1: 'Закон Архімеда', 
+         2: 'Рівномірний рух', 
+         3: 'Важіль', 
+         4: 'Закон Паскаля',
+         5: 'Кінематика та Тертя',
+         6: 'Гідравлічний прес (Закон Паскаля)',
+         7: 'Світло та Тіні (Оптика)'
+       },
       8: { 1: 'Електричне коло', 2: 'Агрегатні стани', 3: 'Теплопровідність', 4: 'Магнітне поле' },
       9: { 1: 'Оптика (Лінзи)', 2: 'Хвилі', 3: 'Відбивання', 4: 'Ефект Доплера' },
       10: { 1: 'Динаміка', 2: 'Ідеальний газ', 3: 'Балістика', 4: 'P-V Діаграма' },
@@ -23,11 +31,11 @@ const translations = {
         2: '\u{1F4CF} Обирайте предмети та кидайте їх у мензурку. Зверніть увагу на зміну рівня води.',
         3: '\u{1F9F2} Перетягуйте магніти та спостерігайте за поведінкою залізних ошурок.',
       },
-      7: { 
-        1: '🖱 Перетягніть брусок у воду. Змінюйте густину тіла та рідини.', 
-        2: '🚗 Спостерігайте за графіком S(t). Змінюйте швидкість під час руху!',
-        3: '⚖️ Додавайте тягарці на ліве та праве плече важеля. Слідкуйте за балансом моментів сил.',
-        4: '💧 Чим глибше отвір, тим з більшою швидкістю вилітає струмінь (Закон Торрічеллі).'
+       7: { 
+        1: '🖱 Рівномірний та нерівномірний рух на похилій площині. Візуалізуйте сили: Tg, N, Fтр.', 
+        2: '🔬 Концепція тертя: коефіцієнт μ впливає на рух. Статичний і рухливий тертя.', 
+        3: '💧 Гідравлічний прес: F₁/S₁ = F₂/S₂. Тиск передається без втрат.', 
+        4: '💡 Світло та тіні: закон прямолінійного поширення, umbra та penumbra з розширеним джерелом.'
       },
       8: { 
         1: '⚡ Змінюйте напругу та опір. Перетягуйте елементи.', 
@@ -117,6 +125,12 @@ const translations = {
       coilTurns: "Кількість витків котушки",
       wavelength: "Довжина хвилі (λ)",
       workFunc: "Робота виходу (A)",
+      friction: "Коефіцієнт тертя",
+      angle: "Кут нахилу (°)",
+      pressure: "Тиск на поршень",
+      lightSize: "Розмір джерела",
+      obstacleSize: "Розмір перешкоди",
+      screenDist: "Відстань до екрану",
       hideVectors: "Сховати вектори",
       showVectors: "Показати вектори",
       copper: "Мідь",
@@ -159,7 +173,15 @@ const translations = {
     },
     expNames: {
       6: { 1: 'Stavba látek', 2: 'Hustota a objem', 3: 'Magnetické vlastnosti' },
-      7: { 1: 'Archimedův zákon', 2: 'Rovnoměrný pohyb', 3: 'Páka', 4: 'Pascalův zákon' },
+       7: { 
+         1: 'Archimedův zákon', 
+         2: 'Rovnoměrný pohyb', 
+         3: 'Páka', 
+         4: 'Pascalův zákon',
+         5: 'Kinematika a tření',
+         6: 'Hydraulický lis (Pascalův zákon)',
+         7: 'Světlo a stíny (Optika)'
+       },
       8: { 1: 'Elektrický obvod', 2: 'Skupenství látek', 3: 'Tepelná vodivost', 4: 'Magnetické pole' },
       9: { 1: 'Optika (Čočky)', 2: 'Vlny', 3: 'Odraz', 4: 'Dopplerův jev' },
       10: { 1: 'Dynamika', 2: 'Ideální plyn', 3: 'Balistika', 4: 'P-V Diagram' },
@@ -171,11 +193,11 @@ const translations = {
         2: '📏 Vyberte předměty a vhoďte je do odměrného válce. Sledujte změnu hladiny vody.',
         3: '🧲 Přetahujte magnety a sledujte chování železných pilin.',
       },
-      7: { 
-        1: '🖱 Přetáhněte kvádr do vody. Měňte hustotu tělesa a kapaliny.', 
-        2: '🚗 Sledujte graf S(t). Měňte rychlost během pohybu!',
-        3: '⚖️ Přidávejte závaží na levé a pravé rameno páky. Sledujte rovnováhu momentů sil.',
-        4: '💧 Čím hlubší je otvor, tím vyšší rychlostí vytéká proud (Torricelliho zákon).'
+       7: { 
+        1: '🖱 Rovnoměrný a nerovnoměrný pohyb na nakloněné rovině. Vizualizujte síly: T, N, Fr.', 
+        2: '🔬 Koncept tření: koeficient μ ovlivňuje pohyb. Statický a kinetický třecí odpor.', 
+        3: '💧 Hydraulický lis: F₁/S₁ = F₂/S₂. Tlak se přenáší beze ztrát.', 
+        4: '💡 Světlo a stíny: zákon lineárního šíření, umbra a penumbra s rozšířeným zdrojem.'
       },
       8: { 
         1: '⚡ Měňte napětí a odpor. Přetahujte prvky.', 
